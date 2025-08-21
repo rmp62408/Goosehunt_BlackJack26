@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pink Royale - Player Hub</title>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="supabaseClient.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #101020;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #balance, #vault { font-size: 22px; margin: 15px; }
+  </style>
+</head>
+<body>
+  <h1>🎰 Pink Royale - Player Hub</h1>
+
+  <div id="balance">Balance: $0</div>
+  <div id="vault">Vault: $0</div>
+
+  <button onclick="window.location='blackjack.html'">Play Blackjack</button>
+  <button onclick="cashout()">Cashout → Vault</button>
+  <button onclick="withdraw()">Withdraw from Vault</button>
+
+  <h3>Request More Chips</h3>
+  <input id="amount" type="number" placeholder="Enter amount" />
+  <button onclick="requestChips()">Request</button>
+
+  <script>
+    async function loadBalances() {
+      let { data, error } = await sb.from('wallets').select('*').single();
+      if (data) {
+        document.getElementById('balance').textContent = 'Balance: $' + data.balance;
+        document.getElementById('vault').textContent = 'Vault: $' + data.vault;
+      }
+    }
+
+    async function cashout() {
+      await sb.rpc('cashout');
+      loadBalances();
+    }
+
+    async function withdraw() {
+      await sb.rpc('withdraw');
+      loadBalances();
+    }
+
+    async function requestChips() {
+      let amt = parseInt(document.getElementById('amount').value);
+      if (!amt) return;
+      await sb.from('chip_requests').insert({ amount: amt, status: 'pending' });
+      alert('Request sent to moderator.');
+    }
+
+    loadBalances();
+  </script>
+</body>
+</html>

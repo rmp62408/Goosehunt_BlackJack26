@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pink Royale Blackjack</title>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="supabaseClient.js"></script>
+  <style>
+    body { background:#004400; color:white; font-family:Arial, sans-serif; text-align:center; }
+    .btn { margin:5px; padding:10px 20px; font-size:18px; border:none; border-radius:8px; cursor:pointer; }
+    #hit { background:green; } #stand { background:red; }
+    #double { background:blue; } #split { background:teal; }
+  </style>
+</head>
+<body>
+  <h1>♠️ Pink Royale Blackjack ♥️</h1>
+  <div id="chips"></div>
+  <div id="game"></div>
+
+  <button id="hit" class="btn">Hit</button>
+  <button id="stand" class="btn">Stand</button>
+  <button id="double" class="btn">Double</button>
+  <button id="split" class="btn">Split</button>
+
+  <script>
+    // Placeholder blackjack game logic
+    document.getElementById('hit').onclick = () => alert("Hit card");
+    document.getElementById('stand').onclick = () => alert("Stand");
+    document.getElementById('double').onclick = () => alert("Double Bet");
+    document.getElementById('split').onclick = () => alert("Split hand");
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pink Royale - Admin</title>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="supabaseClient.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background:#181828; color:white; text-align:center; }
+    table { margin:auto; border-collapse: collapse; margin-top:20px; }
+    td, th { border:1px solid #555; padding:8px; }
+    button { margin:5px; padding:5px 15px; border:none; border-radius:6px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <h1>🛠️ Pink Royale Moderator Panel</h1>
+  <div id="requests"></div>
+
+  <script>
+    async function loadRequests() {
+      let { data } = await sb.from('chip_requests').select('*').eq('status','pending');
+      let html = '<table><tr><th>User</th><th>Amount</th><th>Actions</th></tr>';
+      data.forEach(r => {
+        html += `<tr>
+          <td>${r.user_id}</td>
+          <td>$${r.amount}</td>
+          <td>
+            <button onclick="approve(${r.id},${r.amount})">Approve</button>
+            <button onclick="deny(${r.id})">Deny</button>
+          </td></tr>`;
+      });
+      html += '</table>';
+      document.getElementById('requests').innerHTML = html;
+    }
+
+    async function approve(id, amt) {
+      await sb.rpc('approve_request', { rid:id, amt:amt });
+      loadRequests();
+    }
+    async function deny(id) {
+      await sb.from('chip_requests').update({ status:'denied' }).eq('id', id);
+      loadRequests();
+    }
+
+    loadRequests();
+  </script>
+</body>
+</html>
