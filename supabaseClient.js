@@ -1,9 +1,11 @@
 // supabaseClient.js
-// Configure your Supabase project here
+// Load the Supabase client on every page that needs it.
+// Make sure your HTML includes:
+// <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+// <script src="supabaseClient.js"></script>
 
 const SUPABASE_URL = 'https://etrloqzktcqjgbxzmurr.supabase.co';
-const SUPABASE_ANON_KEY = 'PASTE-YOUR-ANON-KEY-HERE'; // replace with your anon public key
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY'; // <-- paste your anon key here
 
-// Initialize client
-const { createClient } = supabase;
-window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Reuse a single client across page reloads
+window.sb = window.sb || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
