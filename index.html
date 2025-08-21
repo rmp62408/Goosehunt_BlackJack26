@@ -1,81 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Pink Royale Gaming</title>
+  <meta charset="UTF-8" />
+  <title>Pink Royale — Player Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      margin: 0;
-      font-family: "Trebuchet MS", sans-serif;
-      background: linear-gradient(to right, #ff4da6, #001f4d);
-      color: white;
-      text-align: center;
-    }
-    header {
-      padding: 30px;
-      font-size: 36px;
-      font-weight: bold;
-      background: rgba(0,0,0,0.5);
-    }
-    .container {
-      padding: 60px 20px;
-    }
-    .balance-box {
-      background: #222;
-      padding: 20px;
-      border-radius: 10px;
-      margin: 20px auto;
-      width: 300px;
-      font-size: 20px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
-    }
-    button {
-      margin: 15px;
-      padding: 15px 30px;
-      font-size: 20px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      color: white;
-      transition: transform 0.2s;
-    }
-    button:hover {
-      transform: scale(1.1);
-    }
-    .play { background: #28a745; }
-    .cashout { background: #007bff; }
-    .request { background: #ff4da6; }
+    body { margin:0; font-family: Arial, sans-serif; color:#fff; text-align:center;
+           background: linear-gradient(120deg,#ff4da6,#001f4d); min-height:100vh; }
+    header { padding:28px 16px; font-size:32px; font-weight:800; background:rgba(0,0,0,.35); }
+    .wrap { max-width:900px; margin:30px auto; padding:16px; }
+    .card { background: rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.25);
+            border-radius:16px; padding:18px; margin:12px auto; }
+    .row { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; align-items:flex-end; }
+    input, button { font-size:16px; padding:10px 14px; border-radius:10px; border:none; }
+    input { width:260px; }
+    button { cursor:pointer; font-weight:700; }
+    .btn { background:#222; color:#fff; border:1px solid rgba(255,255,255,.25); }
+    .play { background:#28a745; color:#fff; }
+    .cashout { background:#007bff; color:#fff; }
+    .withdraw { background:#6f42c1; color:#fff; }
+    .request { background:#ff4da6; color:#fff; }
+    .danger { background:#d9534f; color:#fff; }
+    small { opacity:.9 }
+    a { color:#fff; font-weight:700; }
   </style>
 </head>
 <body>
-  <header>🎰 Pink Royale Gaming 🎲</header>
+  <header>🎰 Pink Royale Gaming — Player Hub</header>
+  <div class="wrap">
 
-  <div class="container">
-    <div class="balance-box">
-      Balance: $<span id="balance">100</span>
+    <!-- Auth -->
+    <div class="card">
+      <div id="auth-state" style="margin-bottom:10px;">Checking sign-in…</div>
+      <div id="auth-controls">
+        <div class="row" id="login-row" style="display:none;">
+          <input id="email" type="email" placeholder="you@email.com" />
+          <button class="btn" onclick="sendMagicLink()">Send magic link</button>
+        </div>
+        <div id="signed-in-row" style="display:none;">
+          <small id="who"></small><br/>
+          <button class="danger" onclick="signOut()">Sign out</button>
+        </div>
+      </div>
     </div>
 
-    <button class="play" onclick="window.location.href='blackjack.html'">
-      ▶ Play Blackjack
-    </button>
-    <button class="cashout" onclick="alert('Cashout requested!')">
-      💰 Cash Out
-    </button>
-    <button class="request" onclick="alert('Chip request sent to moderator!')">
-      🎟 Request Chips
-    </button>
+    <!-- Wallet -->
+    <div class="card">
+      <h2>Your Wallet</h2>
+      <div class="row">
+        <div class="card" style="min-width:200px;">
+          <div style="font-size:18px;">Available Chips</div>
+          <div style="font-size:28px; font-weight:800;">$<span id="balance">0</span></div>
+        </div>
+        <div class="card" style="min-width:200px;">
+          <div style="font-size:18px;">Vault</div>
+          <div style="font-size:28px; font-weight:800;">$<span id="vault">0</span></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <button class="cashout" onclick="cashoutToVault()">💰 Cashout → Vault</button>
+        <button class="withdraw" onclick="withdrawFromVault()">↩ Withdraw to Balance</button>
+        <button class="play" onclick="location.href='blackjack.html'">▶ Play Blackjack</button>
+      </div>
+      <div id="msg" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Request Chips -->
+    <div class="card">
+      <h3>Request More Chips</h3>
+      <div class="row">
+        <input id="req-amount" type="number" min="1" step="1" placeholder="Amount (e.g. 100)" />
+        <button class="request" onclick="requestChips()">Submit Request</button>
+      </div>
+      <small>We’ll notify the moderator. You can keep this page open.</small>
+    </div>
+
+    <!-- Recent Requests (optional) -->
+    <div class="card" id="requests-card" style="display:none;">
+      <h3>Your Recent Requests</h3>
+      <div id="requests"></div>
+    </div>
+
+    <p class="card">
+      Having trouble? Make sure you’ve added this URL to your Supabase Auth → Redirect URLs:<br>
+      <code>https://YOUR-USERNAME.github.io/YOUR-REPO/</code>
+    </p>
   </div>
 
-  <!-- Supabase Client -->
+  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabaseClient.js"></script>
   <script>
-    // Example: load balance (replace with your Supabase logic)
-    async function loadBalance() {
-      document.getElementById("balance").innerText = 100; // temp placeholder
+    // ---- Auth helpers ----
+    async function sendMagicLink(){
+      const email = document.getElementById('email').value.trim();
+      if(!email) return alert('Enter your email');
+      const { error } = await sb.auth.signInWithOtp({ email });
+      if(error){ alert(error.message); return; }
+      alert('Magic link sent! Check your email.');
     }
-    loadBalance();
+    async function signOut(){
+      await sb.auth.signOut();
+      location.reload();
+    }
+
+    // ---- Wallet helpers (simple schema: wallets + chip_requests) ----
+    let uid = null;
+
+    async function ensureWalletRow(){
+      // Create a wallets row if not present (starting balance 100, vault 0)
+      const { data, error } = await sb.from('wallets')
+        .select('user_id,balance,vault').eq('user_id', uid).maybeSingle();
+      if(error){ console.warn(error.message); }
+      if(!data){
+        const { error: e2 } = await sb.from('wallets')
+          .insert({ user_id: uid, balance: 100, vault: 0 });
+        if(e2){ console.warn(e2.message); }
+      }
+    }
+
+    async function loadWallet(){
+      const { data, error } = await sb.from('wallets')
+        .select('balance,vault').eq('user_id', uid).maybeSingle();
+      if(error){ console.warn(error.message); return { balance: 0, vault: 0 }; }
+      return data || { balance: 0, vault: 0 };
+    }
+
+    async function saveWallet(obj){
+      const { error } = await sb.from('wallets')
+        .update(obj).eq('user_id', uid);
+      if(error){ console.warn(error.message); return false; }
+      return true;
+    }
+
+    // Move all balance to vault
+    async function cashoutToVault(){
+      const w = await loadWallet();
+      if(w.balance <= 0){ setMsg('No chips to cash out.'); return; }
+      const ok = await saveWallet({ balance: 0, vault: w.vault + w.balance });
+      if(ok){ setMsg('Cashed out to vault.'); refresh(); }
+    }
+
+    // Move vault to balance
+    async function withdrawFromVault(){
+      const w = await loadWallet();
+      if(w.vault <= 0){ setMsg('No chips in vault.'); return; }
+      const ok = await saveWallet({ balance: w.balance + w.vault, vault: 0 });
+      if(ok){ setMsg('Withdrawn from vault.'); refresh(); }
+    }
+
+    // Create a chip request
+    async function requestChips(){
+      const amt = parseInt(document.getElementById('req-amount').value, 10);
+      if(!amt || amt <= 0){ alert('Enter a positive amount'); return; }
+      const { error } = await sb.from('chip_requests')
+        .insert({ user_id: uid, amount: amt, status: 'pending' });
+      if(error){ alert(error.message); return; }
+      setMsg('Request sent to moderator.'); document.getElementById('req-amount').value = '';
+      loadRecentRequests();
+    }
+
+    async function loadRecentRequests(){
+      const box = document.getElementById('requests');
+      const card = document.getElementById('requests-card');
+      const { data, error } = await sb.from('chip_requests')
+        .select('*').eq('user_id', uid).order('created_at', { ascending:false }).limit(5);
+      if(error){ console.warn(error.message); return; }
+      if(!data || !data.length){ card.style.display = 'none'; return; }
+      card.style.display = 'block';
+      box.innerHTML = data.map(r => {
+        const dt = new Date(r.created_at).toLocaleString();
+        return `<div class="card">Amount: $${r.amount} • Status: ${r.status} • <small>${dt}</small></div>`;
+      }).join('');
+    }
+
+    function setMsg(t){ document.getElementById('msg').textContent = t; }
+
+    async function refresh(){
+      const w = await loadWallet();
+      document.getElementById('balance').textContent = w.balance ?? 0;
+      document.getElementById('vault').textContent = w.vault ?? 0;
+    }
+
+    // ---- Init ----
+    (async function init(){
+      const { data: { session } } = await sb.auth.getSession();
+      const authState = document.getElementById('auth-state');
+      const loginRow = document.getElementById('login-row');
+      const signedRow = document.getElementById('signed-in-row');
+      const who = document.getElementById('who');
+
+      if(!session){
+        authState.textContent = 'Not signed in';
+        loginRow.style.display = 'flex';
+        signedRow.style.display = 'none';
+        return;
+      }
+
+      uid = session.user.id;
+      who.textContent = session.user.email || uid;
+      authState.textContent = 'Signed in';
+      loginRow.style.display = 'none';
+      signedRow.style.display = 'block';
+
+      await ensureWalletRow();
+      await refresh();
+      await loadRecentRequests();
+
+      // Optional: refresh on auth state changes
+      sb.auth.onAuthStateChange((_event, s) => { if(!s) location.reload(); });
+    })();
   </script>
 </body>
 </html>
