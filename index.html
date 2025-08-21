@@ -1,74 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Pink Royale - Player Hub</title>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <script src="supabaseClient.js"></script>
+  <title>Pink Royale Gaming</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #101020;
-      color: #fff;
+      margin: 0;
+      font-family: "Trebuchet MS", sans-serif;
+      background: linear-gradient(to right, #ff4da6, #001f4d);
+      color: white;
       text-align: center;
+    }
+    header {
+      padding: 30px;
+      font-size: 36px;
+      font-weight: bold;
+      background: rgba(0,0,0,0.5);
+    }
+    .container {
+      padding: 60px 20px;
+    }
+    .balance-box {
+      background: #222;
       padding: 20px;
+      border-radius: 10px;
+      margin: 20px auto;
+      width: 300px;
+      font-size: 20px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
     }
     button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
+      margin: 15px;
+      padding: 15px 30px;
+      font-size: 20px;
+      font-weight: bold;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      color: white;
+      transition: transform 0.2s;
     }
-    #balance, #vault { font-size: 22px; margin: 15px; }
+    button:hover {
+      transform: scale(1.1);
+    }
+    .play { background: #28a745; }
+    .cashout { background: #007bff; }
+    .request { background: #ff4da6; }
   </style>
 </head>
 <body>
-  <h1>🎰 Pink Royale - Player Hub</h1>
+  <header>🎰 Pink Royale Gaming 🎲</header>
 
-  <div id="balance">Balance: $0</div>
-  <div id="vault">Vault: $0</div>
+  <div class="container">
+    <div class="balance-box">
+      Balance: $<span id="balance">100</span>
+    </div>
 
-  <button onclick="window.location='blackjack.html'">Play Blackjack</button>
-  <button onclick="cashout()">Cashout → Vault</button>
-  <button onclick="withdraw()">Withdraw from Vault</button>
+    <button class="play" onclick="window.location.href='blackjack.html'">
+      ▶ Play Blackjack
+    </button>
+    <button class="cashout" onclick="alert('Cashout requested!')">
+      💰 Cash Out
+    </button>
+    <button class="request" onclick="alert('Chip request sent to moderator!')">
+      🎟 Request Chips
+    </button>
+  </div>
 
-  <h3>Request More Chips</h3>
-  <input id="amount" type="number" placeholder="Enter amount" />
-  <button onclick="requestChips()">Request</button>
-
+  <!-- Supabase Client -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
   <script>
-    async function loadBalances() {
-      let { data, error } = await sb.from('wallets').select('*').single();
-      if (data) {
-        document.getElementById('balance').textContent = 'Balance: $' + data.balance;
-        document.getElementById('vault').textContent = 'Vault: $' + data.vault;
-      }
+    // Example: load balance (replace with your Supabase logic)
+    async function loadBalance() {
+      document.getElementById("balance").innerText = 100; // temp placeholder
     }
-
-    async function cashout() {
-      await sb.rpc('cashout');
-      loadBalances();
-    }
-
-    async function withdraw() {
-      await sb.rpc('withdraw');
-      loadBalances();
-    }
-
-    async function requestChips() {
-      let amt = parseInt(document.getElementById('amount').value);
-      if (!amt) return;
-      await sb.from('chip_requests').insert({ amount: amt, status: 'pending' });
-      alert('Request sent to moderator.');
-    }
-
-    loadBalances();
+    loadBalance();
   </script>
 </body>
 </html>
-<button onclick="window.location.href='blackjack.html'">
-  Play Blackjack
-</button>
-
